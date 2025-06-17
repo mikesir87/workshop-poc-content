@@ -1,12 +1,12 @@
-const express = require('express');
-const exphbs = require('express-handlebars');
-const { Pool } = require('pg');
-const path = require('path');
+import express from "express";
+import exphbs from "express-handlebars";
+import path from "path";
+import { fileURLToPath } from 'node:url';
+import { getTodoItems, addTodoItem, closeDb, markTodoItemComplete, removeTodoItem } from "./db.mjs";
 
 const app = express();
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgres://postgres:secret@localhost:5432/postgres'
-});
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 app.engine('hbs', exphbs.engine({ extname: '.hbs' }));
 app.set('view engine', 'hbs');
@@ -15,7 +15,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // List todos
 app.get('/', async (req, res) => {
-  const { rows: todos } = await pool.query('SELECT * FROM todos ORDER BY id');
+  const todos = await getTodoItems();
   res.render('index', { todos });
 });
 
@@ -23,23 +23,31 @@ app.get('/', async (req, res) => {
 app.post('/add', async (req, res) => {
   const { todo } = req.body;
   if (todo && todo.trim() !== '') {
-    await pool.query('INSERT INTO todos (text) VALUES ($1)', [todo]);
+    await addTodoItem(todo.trim());
   }
   res.redirect('/');
 });
 
 // Mark as complete
 app.post('/complete/:id', async (req, res) => {
-  await pool.query('UPDATE todos SET completed = TRUE WHERE id = $1', [req.params.id]);
+  await markTodoItemComplete(req.params.id);
   res.redirect('/');
 });
 
 // Remove todo
 app.post('/remove/:id', async (req, res) => {
-  await pool.query('DELETE FROM todos WHERE id = $1', [req.params.id]);
+  await removeTodoItem(req.params.id);
   res.redirect('/');
 });
 
 app.listen(3000, () => {
   console.log(`Server running on http://localhost:3000`);
+});
+
+["SIGTERM", "SIGINT"].forEach(signal => {
+  process.on(signal, async () => {
+    closeDb();
+    console.log(`Received ${signal}, shutting down gracefully...`);
+    process.exit(0);
+  });
 });
