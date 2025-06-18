@@ -1,8 +1,6 @@
 import { Pool } from 'pg';
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgres://postgres:secret@localhost:5432/postgres'
-});
+const pool = new Pool();
 
 export async function getTodoItems() {
     const { rows } = await pool.query('SELECT * FROM todos ORDER BY id');

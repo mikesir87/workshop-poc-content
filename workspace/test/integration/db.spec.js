@@ -1,6 +1,7 @@
 import { PostgreSqlContainer } from "@testcontainers/postgresql";
 import path from "path";
 import * as originalConsole from "console";
+import { getTodoItems, addTodoItem, markTodoItemComplete, removeTodoItem, closeDb } from "../../src/db.mjs";
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 
@@ -13,7 +14,7 @@ let postgresContainer;
 
 beforeAll(async () => {
   postgresContainer = await new PostgreSqlContainer("postgres:16-alpine")
-    .withCopyFilesToContainer([
+    .withBindMounts([
       {
         source: path.join(__dirname, "../../db"),
         target: "/docker-entrypoint-initdb.d",
@@ -38,8 +39,6 @@ afterAll(async () => {
 
 
 it("should connect to the database and perform basic operations", async () => {
-  const { getTodoItems, addTodoItem, markTodoItemComplete, removeTodoItem, closeDb } = await import("../../src/db.mjs");
-
   // Add a todo item
   await addTodoItem("Test Todo");
   
