@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js",
+    "dev": "env-cmd --file .env --nodemon src/index.js",
     "integration-test": "env-cmd --file .env.node -- jest \"test/integration/.*\\.spec\\.js\" --detectOpenHandles",
     "test": "env-cmd --file .env.node -- jest --detectOpenHandles"
   },
