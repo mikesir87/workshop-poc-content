@@ -4,6 +4,6 @@ description: >
 
 sections:
   - title: Running your first container
-    contentPath: ./01-containers.md
+    contentPath: ./01-first-container.md
   - title: Starting a database
     contentPath: ./02-databases.md
